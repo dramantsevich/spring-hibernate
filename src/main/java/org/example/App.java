@@ -21,13 +21,12 @@ public class App
         try {
             session.beginTransaction();
 
-            Person person1 = new Person("Dima", 22);
-            Person person2 = new Person("Diana", 21);
-            Person person3 = new Person("Artsiom", 26);
+            Person person1 = session.get(Person.class, 2);
 
-            session.save(person1);
+            session.delete(person1);
+
+            Person person2 = new Person("Dima", 22);
             session.save(person2);
-            session.save(person3);
 
             session.getTransaction().commit();
         } finally {
