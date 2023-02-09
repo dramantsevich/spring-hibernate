@@ -1,7 +1,7 @@
 package org.example;
 
-import org.example.model.Item;
-import org.example.model.Person;
+import org.example.model.Director;
+import org.example.model.Movie;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -18,8 +18,8 @@ public class App
 {
     public static void main( String[] args )
     {
-        Configuration configuration = new Configuration().addAnnotatedClass(Person.class)
-                .addAnnotatedClass(Item.class);
+        Configuration configuration = new Configuration().addAnnotatedClass(Director.class)
+                .addAnnotatedClass(Movie.class);
 
         SessionFactory sessionFactory = configuration.buildSessionFactory();
         Session session = sessionFactory.getCurrentSession();
@@ -27,64 +27,44 @@ public class App
         try {
             session.beginTransaction();
 
-            Person person = session.get(Person.class, 3);
-            System.out.println(person);
+            Director director = session.get(Director.class, 1);
+            System.out.println(director);
 
-            List<Item> personList = person.getItemList();
-            System.out.println(personList);
+            List<Movie> movieList = director.getMovieList();
+            System.out.println(movieList);
 
-            Item item = session.get(Item.class, 5);
-            System.out.println(item);
+            Movie movie = session.get(Movie.class, 1);
+            System.out.println(movie);
 
-            Person owner = item.getPerson();
-            System.out.println(owner);
+            Director movieDirector = movie.getDirector();
+            System.out.println(movieDirector);
 
-            Person personWithNewItem = session.get(Person.class, 2);
+            Director directorWithNewMovie = session.get(Director.class, 2);
+            Movie newMovie = new Movie("New movie", directorWithNewMovie, 1999);
 
-            Item newItem = new Item("New Item", personWithNewItem);
+            directorWithNewMovie.getMovieList().add(newMovie);
 
-            personWithNewItem.getItemList().add(newItem);
+            session.save(newMovie);
 
-            session.save(newItem);
+            Director newDirector = new Director("Dima", 2000);
+            Movie newMovieForDirector = new Movie("HEHEHEHEHE", newDirector, 2005);
 
-            Person newPerson = new Person("Test person", 45);
+            newDirector.setMovieList(new ArrayList<>(Collections.singletonList(newMovieForDirector)));
 
-            Item newItemForNewPerson = new Item("New Item for New Person", newPerson);
+            session.save(newDirector);
+            session.save(newMovieForDirector);
 
-            newPerson.setItemList(new ArrayList<>(Collections.singletonList(newItemForNewPerson)));
+            Movie existingMovie = session.get(Movie.class, 3);
+            Director existingDirector = session.get(Director.class, 7);
 
-            session.save(newPerson);
-            session.save(newItemForNewPerson);
+            session.createQuery("UPDATE Movie SET director_id =" + existingDirector.getDirector_id()
+                    + " WHERE movie_id =" + existingMovie.getId()).executeUpdate();
 
-            Person personForItemDelete = session.get(Person.class, 3);
-            List<Item> itemsForDelete = personForItemDelete.getItemList();
+            Director directorWhichFilmRemove = session.get(Director.class, 4);
+            Movie movieForDelete = session.get(Movie.class, directorWhichFilmRemove.getMovieList().get(0).getId());
 
-//            SQL
-            for (Item deleteItem : itemsForDelete) {
-                session.remove(deleteItem);
-            }
-
-//            No SQL, but need for cash
-            personForItemDelete.getItemList().clear();
-
-            Person personDelete = session.get(Person.class, 2);
-
-//            SQL
-            session.remove(personDelete);
-
-//            Need for cash
-            personDelete.getItemList().forEach(i -> i.setPerson(null));
-
-            Person personForSetinngItems = session.get(Person.class, 4);
-            Item itemForSetPerson = session.get(Item.class, 3);
-//            For cash
-            itemForSetPerson.getPerson().getItemList().remove(itemForSetPerson);
-
-//            SQL
-            itemForSetPerson.setPerson(personForSetinngItems);
-
-//            For cash
-            personForSetinngItems.getItemList().add(itemForSetPerson);
+            directorWhichFilmRemove.getMovieList().remove(movieForDelete);
+            session.delete(movieForDelete);
 
             session.getTransaction().commit();
         } finally {
