@@ -20,7 +20,10 @@ public class Item {
     public Item() {}
 
     public Item(int id, String name) {
-        this.id = id;
+        this.name = name;
+    }
+
+    public Item(String name) {
         this.name = name;
     }
 

@@ -1,14 +1,15 @@
 package org.example;
 
 import org.example.model.Director;
+import org.example.model.Item;
 import org.example.model.Movie;
+import org.example.model.Person;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Hello world!
@@ -18,8 +19,8 @@ public class App
 {
     public static void main( String[] args )
     {
-        Configuration configuration = new Configuration().addAnnotatedClass(Director.class)
-                .addAnnotatedClass(Movie.class);
+        Configuration configuration = new Configuration().addAnnotatedClass(Person.class)
+                .addAnnotatedClass(Item.class);
 
         SessionFactory sessionFactory = configuration.buildSessionFactory();
         Session session = sessionFactory.getCurrentSession();
@@ -27,44 +28,22 @@ public class App
         try {
             session.beginTransaction();
 
-            Director director = session.get(Director.class, 1);
-            System.out.println(director);
+            Person person = new Person("Test cascading", 25);
 
-            List<Movie> movieList = director.getMovieList();
-            System.out.println(movieList);
+            Item item = new Item("Test cascading", person);
+            person.setItemList(new ArrayList<>(Collections.singletonList(item)));
 
-            Movie movie = session.get(Movie.class, 1);
-            System.out.println(movie);
+            session.persist(person);
+            session.save(person);
 
-            Director movieDirector = movie.getDirector();
-            System.out.println(movieDirector);
 
-            Director directorWithNewMovie = session.get(Director.class, 2);
-            Movie newMovie = new Movie("New movie", directorWithNewMovie, 1999);
+            Person person1 = new Person("Test cascading", 30);
 
-            directorWithNewMovie.getMovieList().add(newMovie);
+            person1.addItem(new Item("Item1"));
+            person1.addItem(new Item("Item2"));
+            person1.addItem(new Item("Item3"));
 
-            session.save(newMovie);
-
-            Director newDirector = new Director("Dima", 2000);
-            Movie newMovieForDirector = new Movie("HEHEHEHEHE", newDirector, 2005);
-
-            newDirector.setMovieList(new ArrayList<>(Collections.singletonList(newMovieForDirector)));
-
-            session.save(newDirector);
-            session.save(newMovieForDirector);
-
-            Movie existingMovie = session.get(Movie.class, 3);
-            Director existingDirector = session.get(Director.class, 7);
-
-            session.createQuery("UPDATE Movie SET director_id =" + existingDirector.getDirector_id()
-                    + " WHERE movie_id =" + existingMovie.getId()).executeUpdate();
-
-            Director directorWhichFilmRemove = session.get(Director.class, 4);
-            Movie movieForDelete = session.get(Movie.class, directorWhichFilmRemove.getMovieList().get(0).getId());
-
-            directorWhichFilmRemove.getMovieList().remove(movieForDelete);
-            session.delete(movieForDelete);
+            session.save(person1);
 
             session.getTransaction().commit();
         } finally {
