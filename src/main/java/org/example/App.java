@@ -1,16 +1,9 @@
 package org.example;
 
-import org.example.model.Director;
-import org.example.model.Item;
-import org.example.model.Movie;
-import org.example.model.Person;
+import org.example.model.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-
-import java.util.ArrayList;
-import java.util.Collections;
-
 /**
  * Hello world!
  *
@@ -20,7 +13,7 @@ public class App
     public static void main( String[] args )
     {
         Configuration configuration = new Configuration().addAnnotatedClass(Person.class)
-                .addAnnotatedClass(Item.class);
+                .addAnnotatedClass(Passport.class);
 
         SessionFactory sessionFactory = configuration.buildSessionFactory();
         Session session = sessionFactory.getCurrentSession();
@@ -28,22 +21,24 @@ public class App
         try {
             session.beginTransaction();
 
-            Person person = new Person("Test cascading", 25);
+            Person person = new Person("test", 50);
+            Passport passport = new Passport(person, 12345);
 
-            Item item = new Item("Test cascading", person);
-            person.setItemList(new ArrayList<>(Collections.singletonList(item)));
+            person.setPassport(passport);
 
-            session.persist(person);
             session.save(person);
 
+            Person person1 = session.get(Person.class, 8);
+            System.out.println(person1.getPassport().getNumber());
 
-            Person person1 = new Person("Test cascading", 30);
+            Passport passport1 = session.get(Passport.class, 1);
+            System.out.println(passport1);
+            System.out.println(passport1.getPerson().getName());
 
-            person1.addItem(new Item("Item1"));
-            person1.addItem(new Item("Item2"));
-            person1.addItem(new Item("Item3"));
+            person1.getPassport().setNumber(777777);
+            System.out.println(passport1);
 
-            session.save(person1);
+            session.remove(person1);
 
             session.getTransaction().commit();
         } finally {

@@ -3,8 +3,6 @@ package org.example.model;
 import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "Person")
@@ -20,10 +18,9 @@ public class Person {
     @Column(name = "age")
     private int age;
 
-//    @OneToMany(mappedBy = "person", cascade = CascadeType.PERSIST)
-    @OneToMany(mappedBy = "person")
+    @OneToOne(mappedBy = "person")
     @Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
-    private List<Item> itemList;
+    private Passport passport;
 
     public Person() {
     }
@@ -57,21 +54,13 @@ public class Person {
         this.age = age;
     }
 
-    public List<Item> getItemList() {
-        return itemList;
+    public Passport getPassport() {
+        return passport;
     }
 
-    public void setItemList(List<Item> itemList) {
-        this.itemList = itemList;
-    }
-
-    public void addItem(Item item) {
-        if (this.itemList == null) {
-            this.itemList = new ArrayList<>();
-        }
-
-        this.itemList.add(item);
-        item.setPerson(this);
+    public void setPassport(Passport passport) {
+        this.passport = passport;
+        passport.setPerson(this);
     }
 
     @Override
